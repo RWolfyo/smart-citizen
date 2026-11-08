@@ -1,0 +1,32 @@
+# TEMPORARY: checks that GitHub can sign in to Azure for code signing.
+# Removed again after one run.
+name: Azure login test
+
+on:
+  push:
+    branches: [claude/project-thread-i51q3v]
+    paths: [.github/workflows/azure-login-test.yml]
+
+jobs:
+  login:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Show the subject GitHub sends (no token printed)
+        run: |
+          token=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange" | jq -r .value)
+          echo "$token" | cut -d. -f2 | tr '_-' '/+' | base64 -d 2>/dev/null | jq -r '"sub: " + .sub' || true
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Signed in as
+        run: az account show --query "{subscription:id, tenant:tenantId, user:user.name}" -o table
