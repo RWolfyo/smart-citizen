@@ -1,5 +1,5 @@
 # TEMPORARY: checks that GitHub can sign in to Azure for code signing.
-# Removed again once the sign-in works (run 3: retry after the new credential settles).
+# Removed again once the sign-in works (run 4).
 name: Azure login test
 
 on:
